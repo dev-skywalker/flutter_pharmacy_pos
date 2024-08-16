@@ -11,12 +11,17 @@ class BaseApiService {
     },
   ));
 
-  Future<Response?> getRequest(String endpoint) async {
-    return _handleRequest(() => _dio.get(endpoint));
+  Future<Response?> getRequest(String endpoint,
+      {Map<String, dynamic>? params}) async {
+    return _handleRequest(() => _dio.get(endpoint, queryParameters: params));
   }
 
   Future<Response?> postRequest(
       String endpoint, Map<String, dynamic> data) async {
+    return _handleRequest(() => _dio.post(endpoint, data: data));
+  }
+
+  Future<Response?> postFormRequest(String endpoint, FormData data) async {
     return _handleRequest(() => _dio.post(endpoint, data: data));
   }
 
@@ -25,23 +30,25 @@ class BaseApiService {
     return _handleRequest(() => _dio.put(endpoint, data: data));
   }
 
-  Future<Response?> deleteRequest(String endpoint) async {
-    return _handleRequest(() => _dio.delete(endpoint));
+  Future<Response?> deleteRequest(String endpoint, int id) async {
+    return _handleRequest(() => _dio.delete(endpoint, data: {"id": id}));
   }
 
   Future<Response?> _handleRequest(Future<Response> Function() request) async {
     try {
       return await request();
-    } on DioException catch (e) {
-      return _handleError(e);
     } catch (e) {
-      // Handle other unexpected errors
-      return Response(
-        requestOptions: RequestOptions(path: ''),
-        statusCode: 500,
-        statusMessage: 'Unexpected error: $e',
-      );
+      if (e is DioException) {
+        _handleError(e);
+      } else {
+        return Response(
+          requestOptions: RequestOptions(path: ''),
+          statusCode: 500,
+          statusMessage: 'Unexpected error: $e',
+        );
+      }
     }
+    return null;
   }
 
   Response _handleError(DioException e) {

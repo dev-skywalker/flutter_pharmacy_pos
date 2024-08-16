@@ -5,6 +5,7 @@ import 'package:pharmacy_pos/services/storage_services.dart';
 
 class RootController extends GetxController {
   var currentIndex = 0.obs;
+  var activeMainIndex = 0.obs;
   var currentSubIndex = 0.obs;
   var expandedIndex = (-1).obs;
   final StorageService _storageService = StorageService();

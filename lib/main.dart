@@ -26,15 +26,10 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      // getPages: AppPages.routes,
-      // initialRoute: AppPages.initial,
-      //initialBinding: AuthBinding(),
-      //onReady: () => Get.find<AuthController>().initNaviationListener(),
       defaultTransition: Transition.noTransition,
       transitionDuration: Duration.zero,
       initialRoute: Routes.root,
       getPages: Routes.routes,
-      //onReady: () => Get.find<CheckAuthService>().initNaviationListener(),
     );
   }
 }

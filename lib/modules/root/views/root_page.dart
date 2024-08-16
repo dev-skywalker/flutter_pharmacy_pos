@@ -64,6 +64,7 @@ class Sidebar extends StatelessWidget {
       ],
       builder: (context, routes, index) {
         controller.currentIndex(index);
+        controller.activeMainIndex(index);
         controller.expandedIndex.value = index;
         _updateSubIndex(controller);
         return Obx(() => Container(
@@ -92,11 +93,17 @@ class Sidebar extends StatelessWidget {
   void _updateSubIndex(RootController controller) {
     final urlList = Uri.base.path.split('/');
     switch (urlList.last) {
-      case "create":
+      case "products":
         controller.currentSubIndex(1);
         break;
-      case "reports":
+      case "units":
+        controller.currentSubIndex(1);
+        break;
+      case "create":
         controller.currentSubIndex(2);
+        break;
+      case "reports":
+        controller.currentSubIndex(3);
         break;
       default:
         controller.currentSubIndex(0);
@@ -122,35 +129,37 @@ class SidebarExpansionTile extends StatelessWidget {
     final delegate = context.delegate;
     return Theme(
       data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-      child: ExpansionTile(
-        key: Key(index.toString()),
-        collapsedTextColor:
-            _isSelected(controller.currentIndex.value, index, context),
-        textColor: _isSelected(controller.currentIndex.value, index, context),
-        collapsedBackgroundColor:
-            _getBackgroundColor(controller.currentIndex.value, index),
-        backgroundColor:
-            _getBackgroundColor(controller.currentIndex.value, index),
-        initiallyExpanded: index == controller.expandedIndex.value,
-        leading: controller.sidebarList[index]['icon'] != null
-            ? Icon(controller.sidebarList[index]['icon'])
-            : null,
-        title: Text(controller.sidebarList[index]['title']),
-        trailing: controller.sidebarList[index]['trailing'],
-        enabled: controller.sidebarList[index]['enable'],
-        onExpansionChanged: (newState) {
-          // bool val = Get.find<CheckAuthService>().authed.value;
-          // print(val);
-          // print(index);
-          // print(newState);
+      child: Obx(() {
+        return ExpansionTile(
+          key: Key(index.toString()),
+          collapsedTextColor:
+              _isSelected(controller.currentIndex.value, index, context),
+          textColor: _isSelected(controller.currentIndex.value, index, context),
+          collapsedBackgroundColor:
+              _getBackgroundColor(controller.currentIndex.value, index),
+          backgroundColor:
+              _getBackgroundColor(controller.currentIndex.value, index),
+          initiallyExpanded: index == controller.expandedIndex.value,
+          leading: controller.sidebarList[index]['icon'] != null
+              ? Icon(controller.sidebarList[index]['icon'])
+              : null,
+          title: Text(controller.sidebarList[index]['title']),
+          trailing: controller.sidebarList[index]['trailing'],
+          enabled: controller.sidebarList[index]['enable'],
+          onExpansionChanged: (newState) {
+            controller.expandedIndex.value = newState ? index : -1;
 
-          controller.expandedIndex.value = newState ? index : -1;
-          controller.currentSubIndex(0);
-          controller.currentIndex(index);
-          delegate.toNamed(routes[controller.currentIndex.value]);
-        },
-        children: _buildSubMenuItems(index, context),
-      ),
+            if (index == 0) {
+              controller.currentIndex(0);
+              controller.activeMainIndex(0);
+              controller.currentSubIndex(0);
+              delegate.toNamed(routes[controller.currentIndex.value]);
+            }
+            //
+          },
+          children: _buildSubMenuItems(index, context),
+        );
+      }),
     );
   }
 
@@ -159,46 +168,69 @@ class SidebarExpansionTile extends StatelessWidget {
     return [
       if (index == 2)
         _buildSubMenuItem(
-            title: "Create Product",
+            title: "Products",
             subIndex: 1,
+            routeSuffix: '',
+            context: context,
+            index: 2),
+      if (index == 2)
+        _buildSubMenuItem(
+            title: "Create Product",
+            subIndex: 2,
             routeSuffix: Routes.create,
-            context: context),
+            context: context,
+            index: 2),
       if (index == 2)
         _buildSubMenuItem(
             title: "Product Reports",
-            subIndex: 2,
+            subIndex: 3,
             routeSuffix: Routes.report,
-            context: context),
+            context: context,
+            index: 2),
+      if (index == 3)
+        _buildSubMenuItem(
+            title: "Units",
+            subIndex: 1,
+            routeSuffix: '',
+            context: context,
+            index: 3),
       if (index == 3)
         _buildSubMenuItem(
             title: "Create Unit",
-            subIndex: 1,
+            subIndex: 2,
             routeSuffix: Routes.create,
-            context: context),
+            context: context,
+            index: 3),
       if (index == 3)
         _buildSubMenuItem(
             title: "Unit Reports",
-            subIndex: 2,
+            subIndex: 3,
             routeSuffix: Routes.report,
-            context: context),
+            context: context,
+            index: 3),
     ];
   }
 
   Widget _buildSubMenuItem(
       {required String title,
       required int subIndex,
+      required int index,
       required String routeSuffix,
       required BuildContext context}) {
     return Obx(() {
       return Ink(
-        color: controller.currentSubIndex.value == subIndex
+        color: controller.currentSubIndex.value == subIndex &&
+                controller.activeMainIndex.value == index
             ? Colors.blueGrey.withOpacity(0.3)
             : null,
         child: ListTile(
           leading: const SizedBox.shrink(),
-          selected: controller.currentSubIndex.value == subIndex,
+          selected: controller.currentSubIndex.value == subIndex &&
+              controller.activeMainIndex.value == index,
           onTap: () {
+            controller.currentIndex(index);
             controller.currentSubIndex(subIndex);
+            controller.activeMainIndex(controller.currentIndex.value);
             context.delegate.toNamed(
                 '${routes[controller.currentIndex.value]}$routeSuffix');
           },

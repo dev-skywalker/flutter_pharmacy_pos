@@ -12,8 +12,10 @@ class AuthController extends GetxController {
   RxBool isLoginPage = true.obs;
   RxBool loggedIn = false.obs;
   RxBool isLoading = false.obs;
-  TextEditingController emailController = TextEditingController();
-  TextEditingController passwordController = TextEditingController();
+  TextEditingController emailController =
+      TextEditingController(text: "User0@gmail.com");
+  TextEditingController passwordController =
+      TextEditingController(text: "Aaaaaaa@1");
   TextEditingController confirmPasswordController = TextEditingController();
 
   RxBool isLoginPasswordVisible = false.obs;

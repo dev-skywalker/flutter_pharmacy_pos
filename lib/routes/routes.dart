@@ -4,12 +4,15 @@ import 'package:pharmacy_pos/middlewares/root_middleware.dart';
 import 'package:pharmacy_pos/modules/auth/bindings/auth_binding.dart';
 import 'package:pharmacy_pos/modules/auth/views/login_page.dart';
 import 'package:pharmacy_pos/modules/dashboard/views/dashboard_page.dart';
+import 'package:pharmacy_pos/modules/product/bindings/product_binding.dart';
 import 'package:pharmacy_pos/modules/product/views/create_product.dart';
 import 'package:pharmacy_pos/modules/product/views/product_reports.dart';
+import 'package:pharmacy_pos/modules/product/views/update_product.dart';
 import 'package:pharmacy_pos/modules/root/views/root_page.dart';
 import 'package:pharmacy_pos/modules/units/views/create_unit_page.dart';
 import 'package:pharmacy_pos/modules/units/views/unit_reports.dart';
 
+import '../middlewares/update_middleware.dart';
 import '../modules/product/views/product_page.dart';
 import '../modules/root/bindings/root_binding.dart';
 import '../modules/root/views/home_page.dart';
@@ -22,6 +25,7 @@ class Routes {
   static const products = '/products';
   static const units = '/units';
   static const create = '/create';
+  static const update = '/update';
   static const report = '/reports';
   static const register = '/register';
   static const login = '/login';
@@ -61,18 +65,28 @@ class Routes {
               //participatesInRootNavigator: true,
               children: [
                 GetPage(
-                  name: create,
-                  page: () => const CreateProductPage(),
-                  // preventDuplicates: true,
-                  //transition: Transition.zoom
-                  //participatesInRootNavigator: false,
-                ),
+                    name: create,
+                    page: () => const CreateProductPage(),
+                    binding: ProductBinding()
+                    // preventDuplicates: true,
+                    //transition: Transition.zoom
+                    //participatesInRootNavigator: false,
+                    ),
                 GetPage(
                   name: report,
                   page: () => const ProductReportPage(),
                   // preventDuplicates: true,
                   //transition: Transition.zoom
                   //participatesInRootNavigator: false,
+                ),
+                GetPage(
+                  name: '$update/:id',
+                  page: () => const UpdateProductPage(),
+                  // binding: ProductBinding()
+                  preventDuplicates: true,
+                  //transition: Transition.zoom
+                  participatesInRootNavigator: false,
+                  middlewares: [UpdateProductMiddleware()],
                 ),
               ]),
           GetPage(

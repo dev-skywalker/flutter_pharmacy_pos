@@ -39,7 +39,10 @@ dependencies:
   get_storage: ^2.1.1
   dio: ^5.5.0+1
   animate_do: ^3.3.4
-  url_strategy: ^0.2.0
+  data_table_2: ^2.5.15
+  dropdown_search: ^5.0.6
+  image_picker_web: ^4.0.0
+  image_picker: ^1.1.2
 
 dev_dependencies:
   flutter_test:
