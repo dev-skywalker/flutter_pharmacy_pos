@@ -11,8 +11,7 @@ import 'package:pharmacy_pos/modules/units/services/unit_services.dart';
 import '../../units/model/unit_model.dart';
 import '../repository/product_repository.dart';
 
-class ProductController extends GetxController
-    with GetSingleTickerProviderStateMixin {
+class ProductController extends GetxController {
   final ProductRepository productRepository;
   ProductController(this.productRepository);
   final TextEditingController brandNameController = TextEditingController();
@@ -21,7 +20,6 @@ class ProductController extends GetxController
   final TextEditingController tabletOnCardController = TextEditingController();
   final TextEditingController cardOnBoxController = TextEditingController();
 
-  late TabController tabController;
   RxList<String> chemicalNameList = <String>[].obs;
   Rx<Units?> selectedUnit = Rx<Units?>(null);
   RxBool hasImage = false.obs;
@@ -29,9 +27,13 @@ class ProductController extends GetxController
 
   Uint8List? imageData;
 
+  final GlobalKey<FormState> createProductFormKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> updateProductFormKey = GlobalKey<FormState>();
+
+  RxString updateImageUrl = "".obs;
+
   @override
   void onInit() {
-    tabController = TabController(length: 2, vsync: this);
     super.onInit();
   }
 
@@ -90,8 +92,45 @@ class ProductController extends GetxController
     }
     final response = await productRepository.createProduct(formdata: formData);
     if (response != null && response.statusCode == 201) {
-      print("Product Created");
       clearAddProduct();
+      Get.snackbar("Success", "Product Created.",
+          snackPosition: SnackPosition.bottom);
+    }
+  }
+
+  void updateProduct({required int id, String? url}) async {
+    List<String> nameList = [brandNameController.text, ...chemicalNameList];
+    String name = nameList.join(",");
+    //final brandName =
+
+    final fileName =
+        "${brandNameController.text.replaceAll(" ", "-")}-${DateTime.now().millisecondsSinceEpoch}";
+    final FormData formData = FormData.fromMap({
+      "id": id,
+      "name": name,
+      "description": descriptionController.text,
+      "unitId": selectedUnit.value!.id,
+      "isLocalProduct": isLocalProduct.value
+    });
+    if (selectedUnit.value!.name == "card") {
+      formData.fields
+          .add(MapEntry("tabletOnCard", tabletOnCardController.text));
+      formData.fields.add(MapEntry("cardOnBox", cardOnBoxController.text));
+    }
+
+    if (imageData != null) {
+      formData.files.add(MapEntry(
+          "file", MultipartFile.fromBytes(imageData!, filename: fileName)));
+    } else {
+      // if (updateImageUrl.value != "") {
+      formData.fields.add(MapEntry("imageUrl", updateImageUrl.value));
+      //}
+    }
+    final response = await productRepository.updateProduct(formdata: formData);
+    if (response != null && response.statusCode == 201) {
+      clearAddProduct();
+      Get.snackbar("Success", "Product Updated.",
+          snackPosition: SnackPosition.bottom);
     }
   }
 
@@ -104,6 +143,8 @@ class ProductController extends GetxController
     tabletOnCardController.clear();
     cardOnBoxController.clear();
     imageData = null;
+    updateImageUrl.value = "";
+    isLocalProduct.value = false;
     hasImage.value = false;
   }
 
@@ -125,7 +166,6 @@ class ProductController extends GetxController
 
   @override
   void dispose() {
-    tabController.dispose();
     brandNameController.dispose();
     chemicalNameController.dispose();
     descriptionController.dispose();

@@ -31,4 +31,10 @@ class ProductService extends BaseApiService {
 
     return response;
   }
+
+  Future<Response?> updateProduct(FormData formdata) async {
+    final response = await putFormRequest('/products', formdata);
+
+    return response;
+  }
 }

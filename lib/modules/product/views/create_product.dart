@@ -16,7 +16,11 @@ class CreateProductPage extends GetView<ProductController> {
         actions: [
           TextButton.icon(
             onPressed: () {
-              controller.createProduct();
+              bool isValidate =
+                  controller.createProductFormKey.currentState!.validate();
+              if (isValidate) {
+                controller.createProduct();
+              }
             },
             label: const Text("Save"),
             icon: const Icon(Icons.save),
@@ -31,10 +35,17 @@ class CreateProductPage extends GetView<ProductController> {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 16),
       child: Form(
+        key: controller.createProductFormKey,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextFormField(
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'BrandName is required!';
+                }
+                return null;
+              },
               controller: controller.brandNameController,
               decoration: const InputDecoration(hintText: "Brand Name"),
             ),
@@ -114,6 +125,13 @@ class CreateProductPage extends GetView<ProductController> {
                 Expanded(
                   child: Obx(() {
                     return DropdownSearch<Units>(
+                      validator: (value) {
+                        if (controller.selectedUnit.value == null ||
+                            value == null) {
+                          return 'Unit is required!';
+                        }
+                        return null;
+                      },
                       popupProps: const PopupProps.menu(
                         constraints: BoxConstraints(maxHeight: 200),
                         searchDelay: Duration.zero,

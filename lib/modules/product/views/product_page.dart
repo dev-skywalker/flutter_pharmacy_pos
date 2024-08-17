@@ -30,6 +30,7 @@ class ProductPageState extends State<ProductPage> {
 
   @override
   void didChangeDependencies() {
+    _dessertsDataSource?.refreshDatasource();
     // initState is to early to access route options, context is invalid at that stage
     _dessertsDataSource ??= getCurrentRouteOption(context) == noData
         ? ProductDataSourceAsync.empty()

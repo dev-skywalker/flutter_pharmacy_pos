@@ -30,6 +30,10 @@ class BaseApiService {
     return _handleRequest(() => _dio.put(endpoint, data: data));
   }
 
+  Future<Response?> putFormRequest(String endpoint, FormData data) async {
+    return _handleRequest(() => _dio.put(endpoint, data: data));
+  }
+
   Future<Response?> deleteRequest(String endpoint, int id) async {
     return _handleRequest(() => _dio.delete(endpoint, data: {"id": id}));
   }

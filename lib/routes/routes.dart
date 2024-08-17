@@ -82,7 +82,7 @@ class Routes {
                 GetPage(
                   name: '$update/:id',
                   page: () => const UpdateProductPage(),
-                  // binding: ProductBinding()
+                  binding: ProductBinding(),
                   preventDuplicates: true,
                   //transition: Transition.zoom
                   participatesInRootNavigator: false,

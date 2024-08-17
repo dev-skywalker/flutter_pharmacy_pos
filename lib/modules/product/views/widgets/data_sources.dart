@@ -131,8 +131,8 @@ class ProductDataSourceAsync extends AsyncDataTableSource {
     //notifyListeners();
   }
 
-  String _sortColumn = "name";
-  bool _sortAscending = true;
+  String _sortColumn = "id";
+  bool _sortAscending = false;
 
   void sort(String columnName, bool ascending) {
     _sortColumn = columnName;
@@ -186,12 +186,15 @@ class ProductDataSourceAsync extends AsyncDataTableSource {
             //   }
             // },
             cells: [
-              DataCell(
-                Text(
-                  product.id.toString(),
-                  textAlign: TextAlign.center,
-                ),
-              ),
+              DataCell(ClipRRect(
+                borderRadius: BorderRadius.circular(50),
+                child: product.imageUrl != ""
+                    ? Image.network(product.imageUrl.toString())
+                    : Image.asset(
+                        "assets/images/m-placeholder.png",
+                        fit: BoxFit.fill,
+                      ),
+              )),
               DataCell(
                 Text(nameList[0]),
               ),
@@ -242,12 +245,10 @@ class ProductWebService extends BaseApiService {
     };
     final response = await getRequest('/products', params: params);
 
-    print(response?.statusCode ?? "");
     if (response != null && response.statusCode == 200) {
       List<ProductModel> productList = [];
       final data = response.data['data'] as List<dynamic>;
       for (var v in data) {
-        print(v['id']);
         productList.add(ProductModel(
           id: v['id'],
           name: v['name'],

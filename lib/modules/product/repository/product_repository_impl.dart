@@ -10,6 +10,9 @@ class ProductRepositoryImpl extends ProductRepository {
   Future<Response?> createProduct({required FormData formdata}) =>
       _productService.createProduct(formdata);
   @override
+  Future<Response?> updateProduct({required FormData formdata}) =>
+      _productService.updateProduct(formdata);
+  @override
   Future<Response?> login({required String email, required String password}) =>
       _productService.login(email: email, password: password);
 
