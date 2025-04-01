@@ -7,11 +7,17 @@ class ProductRepositoryImpl extends ProductRepository {
   final ProductService _productService = ProductService();
 
   @override
-  Future<Response?> createProduct({required FormData formdata}) =>
-      _productService.createProduct(formdata);
+  Future<Response?> createProduct({required Map<String, dynamic> data}) =>
+      _productService.createProduct(data);
   @override
-  Future<Response?> updateProduct({required FormData formdata}) =>
-      _productService.updateProduct(formdata);
+  Future<Response?> createProductImage({required FormData formdata}) =>
+      _productService.createProductImage(formdata);
+  @override
+  Future<Response?> updateProduct({required Map<String, dynamic> data}) =>
+      _productService.updateProduct(data);
+  @override
+  Future<Response?> deleteProductImage({required String id}) =>
+      _productService.deleteProductImage(id: id);
   @override
   Future<Response?> login({required String email, required String password}) =>
       _productService.login(email: email, password: password);
@@ -24,4 +30,8 @@ class ProductRepositoryImpl extends ProductRepository {
           required bool isActive}) =>
       _productService.register(
           email: email, password: password, role: role, isActive: isActive);
+
+  @override
+  Future<Response?> getProduct({required int id}) =>
+      _productService.getProduct(id);
 }

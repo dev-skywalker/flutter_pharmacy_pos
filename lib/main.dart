@@ -9,7 +9,6 @@ import 'services/check_auth_service.dart';
 
 Future<void> main() async {
   await GetStorage.init();
-  //setPathUrlStrategy();
   Get.lazyPut(() => CheckAuthService());
   runApp(const MyApp());
 }
@@ -23,11 +22,14 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Pharmacy POS',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.blue,
+            primary: const Color.fromARGB(255, 21, 0, 212)),
         useMaterial3: true,
       ),
-      defaultTransition: Transition.noTransition,
-      transitionDuration: Duration.zero,
+      defaultTransition: Transition.fadeIn,
+      //transitionDuration: Duration(milliseconds: 1000),
+      //home: const LineChartWithResponse(),
       initialRoute: Routes.root,
       getPages: Routes.routes,
     );

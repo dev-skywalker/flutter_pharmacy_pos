@@ -1,14 +1,13 @@
 import 'dart:async';
 
 import 'package:data_table_2/data_table_2.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
+import '../../../routes/routes.dart';
 import '../../../widgets/custom_pager.dart';
 import '../../../widgets/nav_helper.dart';
 import 'widgets/data_sources.dart';
-
-// ignore_for_file: avoid_print
 
 class ProductPage extends StatefulWidget {
   const ProductPage({super.key});
@@ -23,6 +22,7 @@ class ProductPageState extends State<ProductPage> {
   int? _sortColumnIndex;
   ProductDataSourceAsync? _dessertsDataSource;
   final PaginatorController _controller = PaginatorController();
+  //FocusNode myFocusNode = FocusNode();
 
   bool _dataSourceLoading = false;
   int _initialRow = 0;
@@ -40,7 +40,8 @@ class ProductPageState extends State<ProductPage> {
 
     if (getCurrentRouteOption(context) == goToLast) {
       _dataSourceLoading = true;
-      _dessertsDataSource!.getTotalRecords().then((count) => setState(() {
+
+      _dessertsDataSource?.getTotalRecords().then((count) => setState(() {
             _initialRow = count - _rowsPerPage;
             _dataSourceLoading = false;
           }));
@@ -52,16 +53,21 @@ class ProductPageState extends State<ProductPage> {
     int columnIndex,
     bool ascending,
   ) {
+    if (_dessertsDataSource == null) return;
     var columnName = "name";
     switch (columnIndex) {
-      case 0:
-        columnName = "id";
-        break;
+      // case 0:
+      //   columnName = "id";
+      //   break;
       case 1:
         columnName = "name";
         break;
+      case 5:
+        columnName = "expire";
+        break;
     }
     _dessertsDataSource!.sort(columnName, ascending);
+
     setState(() {
       _sortColumnIndex = columnIndex;
       _sortAscending = ascending;
@@ -70,16 +76,19 @@ class ProductPageState extends State<ProductPage> {
 
   @override
   void dispose() {
-    _dessertsDataSource!.dispose();
+    // _dessertsDataSource?.dispose();
+    // _dessertsDataSource = null; // Prevent further use after disposal
+    searchController.dispose(); // Don't forget to dispose of controllers too
+    //_controller.dispose();
     super.dispose();
   }
 
   List<DataColumn> get _columns {
     return [
-      DataColumn2(
+      const DataColumn2(
         size: ColumnSize.S,
-        label: const Text('ID'),
-        onSort: (columnIndex, ascending) => sort(columnIndex, ascending),
+        label: Text('Product'),
+        //onSort: (columnIndex, ascending) => sort(columnIndex, ascending),
       ),
       DataColumn2(
         size: ColumnSize.L,
@@ -87,22 +96,27 @@ class ProductPageState extends State<ProductPage> {
         onSort: (columnIndex, ascending) => sort(columnIndex, ascending),
       ),
       const DataColumn2(
+        size: ColumnSize.S,
         label: Text('Unit'),
+        //onSort: (columnIndex, ascending) => sort(columnIndex, ascending),
+      ),
+      const DataColumn2(
+        label: Text('Unit Cost'),
         size: ColumnSize.S,
         //onSort: (columnIndex, ascending) => sort(columnIndex, ascending),
       ),
       const DataColumn2(
-        label: Text('Presentation'),
-        size: ColumnSize.L,
+        label: Text('Unit Price'),
+        size: ColumnSize.S,
         //onSort: (columnIndex, ascending) => sort(columnIndex, ascending),
       ),
-      const DataColumn2(
-        label: Text('Description'),
+      DataColumn2(
+        label: const Text('Expire'),
         size: ColumnSize.M,
-        //onSort: (columnIndex, ascending) => sort(columnIndex, ascending),
+        onSort: (columnIndex, ascending) => sort(columnIndex, ascending),
       ),
       const DataColumn2(
-        size: ColumnSize.S,
+        size: ColumnSize.M,
         label: Text('Action'),
         //onSort: (columnIndex, ascending) => sort(columnIndex, ascending),
       ),
@@ -111,98 +125,148 @@ class ProductPageState extends State<ProductPage> {
 
   @override
   Widget build(BuildContext context) {
+    bool isSmallScreen = MediaQuery.of(context).size.width >= 980;
     // Last ppage example uses extra API call to get the number of items in datasource
     if (_dataSourceLoading) return const SizedBox();
 
-    return Container(
-      //color: Colors.white,
-      margin: const EdgeInsets.only(top: 0.4),
-      child: Stack(alignment: Alignment.bottomCenter, children: [
-        AsyncPaginatedDataTable2(
-            horizontalMargin: 20,
-            checkboxHorizontalMargin: 12,
-            showCheckboxColumn: false,
-            columnSpacing: 30,
-            //columnSpacing: 0.0,
-            wrapInCard: false,
-            header: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                mainAxisSize: MainAxisSize.max,
-                children: [
-                  Flexible(
-                    child: TextField(
-                      //range: const RangeValues(150, 200),
-                      decoration: InputDecoration(
-                          hintText: "Search",
-                          suffix: IconButton(
-                              onPressed: () {
-                                _dessertsDataSource!.filter = "";
-                                searchController.clear();
-                              },
-                              icon: const Icon(Icons.clear))),
-                      controller: searchController,
+    return Padding(
+      padding: EdgeInsets.only(
+          top: 12, left: isSmallScreen ? 20 : 8, right: isSmallScreen ? 20 : 8),
+      child: Column(
+        children: [
+          SizedBox(
+            height: 44,
+            child: Row(
+              children: [
+                Flexible(
+                  flex: 2,
+                  child: TextField(
+                    controller: searchController,
+                    decoration: InputDecoration(
+                        //isDense: true,
+                        //contentPadding: EdgeInsets.only(bottom: 36),
+                        prefixIcon: const Icon(Icons.search),
+                        border: const OutlineInputBorder(gapPadding: 0),
+                        hintText: "Search Products",
+                        suffix: IconButton(
+                            iconSize: 16,
+                            color: Colors.red,
+                            padding: EdgeInsets.zero,
+                            onPressed: () {
+                              _dessertsDataSource!.filter = "";
+
+                              //setState(() {
+                              searchController.clear();
+                              //});
+                            },
+                            icon: const Icon(
+                              Icons.clear,
+                            ))),
+                    onChanged: (value) {
+                      //setState(() {
+                      _dessertsDataSource!.filter = value;
+                      //});
+                    },
+                  ),
+                ),
+                Flexible(flex: isSmallScreen ? 3 : 0, child: Container()),
+                const SizedBox(width: 8),
+                SizedBox(
+                  width: isSmallScreen ? 150 : 100,
+                  child: InkWell(
+                    onTap: () {
+                      Get.toNamed(
+                          '${Routes.app}${Routes.products}${Routes.create}');
+                    },
+                    child: Container(
+                      //height: 42,
+                      // width: 120,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                          color:
+                              Theme.of(context).primaryColor.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(5)),
+                      child: Center(
+                        child: Text(
+                          isSmallScreen ? "Create Product" : "Create",
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                      ),
                     ),
                   ),
-                  ElevatedButton(
-                      onPressed: () {
-                        _dessertsDataSource!.filter = searchController.text;
-                      },
-                      child: const Text("Search")),
-                  if (kDebugMode && getCurrentRouteOption(context) == custPager)
-                    Row(children: [
-                      OutlinedButton(
-                          onPressed: () => _controller.goToPageWithRow(25),
-                          child: const Text('Go to row 25')),
-                      OutlinedButton(
-                          onPressed: () => _controller.goToRow(5),
-                          child: const Text('Go to row 5'))
-                    ]),
-                  if (getCurrentRouteOption(context) == custPager)
-                    PageNumber(controller: _controller)
-                ]),
-            rowsPerPage: _rowsPerPage,
-            autoRowsToHeight: getCurrentRouteOption(context) == autoRows,
-            // Default - do nothing, autoRows - goToLast, other - goToFirst
-            pageSyncApproach: getCurrentRouteOption(context) == dflt
-                ? PageSyncApproach.doNothing
-                : getCurrentRouteOption(context) == autoRows
-                    ? PageSyncApproach.goToLast
-                    : PageSyncApproach.goToFirst,
-            //minWidth: 450,
-            //fit: FlexFit.tight,
-            border: TableBorder(
-              bottom: BorderSide(color: Colors.grey[300]!),
+                ),
+              ],
             ),
-            onRowsPerPageChanged: null,
-            initialFirstRowIndex: _initialRow,
-            onPageChanged: (rowIndex) {
-              //print(rowIndex / _rowsPerPage);
-            },
-            sortColumnIndex: _sortColumnIndex,
-            sortAscending: _sortAscending,
-            sortArrowIcon: Icons.keyboard_arrow_up,
-            sortArrowAnimationDuration: const Duration(milliseconds: 0),
-            controller: _controller,
-            columns: _columns,
-            empty: Center(
-                child: Container(
-                    padding: const EdgeInsets.all(20),
-                    color: Colors.grey[200],
-                    child: const Text('No data'))),
-            loading: _Loading(),
-            errorBuilder: (e) => _ErrorAndRetry(
-                e.toString(), () => _dessertsDataSource!.refreshDatasource()),
-            source: _dessertsDataSource!),
-        //if (getCurrentRouteOption(context) == custPager)
-        Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: CustomPager(
-              controller: _controller,
-              pagerName: "Product",
-            ))
-      ]),
+          ),
+          const SizedBox(
+            height: 8,
+          ),
+          Flexible(
+            child: Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(0.0),
+              ),
+              child: Stack(alignment: Alignment.bottomCenter, children: [
+                AsyncPaginatedDataTable2(
+                    minWidth: 800,
+                    horizontalMargin: 20,
+                    //checkboxHorizontalMargin: 12,
+                    showCheckboxColumn: false,
+                    columnSpacing: 30,
+                    //columnSpacing: 0.0,
+                    // fit: FlexFit.tight,
+                    // isHorizontalScrollBarVisible: true,
+                    // isVerticalScrollBarVisible: true,
+                    wrapInCard: false,
+                    rowsPerPage: _rowsPerPage,
+                    autoRowsToHeight:
+                        getCurrentRouteOption(context) == autoRows,
+                    // Default - do nothing, autoRows - goToLast, other - goToFirst
+                    pageSyncApproach: getCurrentRouteOption(context) == dflt
+                        ? PageSyncApproach.doNothing
+                        : getCurrentRouteOption(context) == autoRows
+                            ? PageSyncApproach.goToLast
+                            : PageSyncApproach.goToFirst,
+                    //minWidth: 450,
+                    //fit: FlexFit.tight,
+                    border: TableBorder(
+                      top: BorderSide(color: Colors.grey.withOpacity(0.3)),
+                    ),
+                    onRowsPerPageChanged: null,
+                    initialFirstRowIndex: _initialRow,
+                    onPageChanged: (rowIndex) {
+                      //print(rowIndex / _rowsPerPage);
+                    },
+                    sortColumnIndex: _sortColumnIndex,
+                    sortAscending: _sortAscending,
+                    sortArrowIcon: Icons.keyboard_arrow_up,
+                    sortArrowAnimationDuration: const Duration(milliseconds: 0),
+                    controller: _controller,
+                    columns: _columns,
+                    empty: Center(
+                        child: Container(
+                            padding: const EdgeInsets.all(20),
+                            color: Colors.grey[200],
+                            child: const Text('No data'))),
+                    loading: _Loading(),
+                    errorBuilder: (e) => _ErrorAndRetry(e.toString(),
+                        () => _dessertsDataSource!.refreshDatasource()),
+                    source: _dessertsDataSource!),
+                //if (getCurrentRouteOption(context) == custPager)
+                Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    child: CustomPager(
+                      //key: constKey("products"),
+                      controller: _controller,
+                      pagerName: "Product",
+                    ))
+              ]),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -217,7 +281,7 @@ class _ErrorAndRetry extends StatelessWidget {
   Widget build(BuildContext context) => Center(
         child: Container(
             padding: const EdgeInsets.all(10),
-            height: 70,
+            height: 200,
             color: Colors.red,
             child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,

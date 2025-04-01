@@ -26,6 +26,24 @@ class UnitService extends BaseApiService {
     return response;
   }
 
+  Future<Response?> getUnit(int id) async {
+    final response = await getRequest('/units/$id');
+
+    return response;
+  }
+
+  Future<Response?> createUnit(String name, String description) async {
+    final response =
+        await postRequest('/units', {"name": name, "description": description});
+    return response;
+  }
+
+  Future<Response?> updateUnit(int id, String name, String description) async {
+    final response = await putRequest(
+        '/units', {"id": id, "name": name, "description": description});
+    return response;
+  }
+
   Future<Response?> getAllUnits() async {
     final response = await getRequest('/units');
 

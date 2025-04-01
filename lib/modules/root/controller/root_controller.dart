@@ -12,6 +12,7 @@ class RootController extends GetxController {
 
   void logOut() {
     _storageService.clear(key: "token");
+    _storageService.clear(key: "user");
     Get.offAllNamed(Routes.login);
   }
 
@@ -22,19 +23,69 @@ class RootController extends GetxController {
       "trailing": const SizedBox.shrink(),
       "enable": true
     },
-    {
-      "icon": null,
-      "title": "INVENTORY",
-      "trailing": const SizedBox.shrink(),
-      "enable": false
-    },
+    // {
+    //   "icon": null,
+    //   "title": "INVENTORY",
+    //   "trailing": const SizedBox.shrink(),
+    //   "enable": false
+    // },
     {"icon": Icons.list, "title": "Products", "trailing": null, "enable": true},
+
     {
-      "icon": Icons.category,
-      "title": "Units",
+      "icon": Icons.move_to_inbox,
+      "title": "Purchases",
       "trailing": null,
       "enable": true
     },
+    {
+      "icon": Icons.storefront,
+      "title": "Sales",
+      "trailing": null,
+      "enable": true
+    },
+    {
+      "icon": Icons.sync_alt,
+      "title": "Transfer",
+      "trailing": null,
+      "enable": true
+    },
+    {
+      "icon": Icons.person,
+      "title": "Peoples",
+      "trailing": null,
+      "enable": true
+    },
+    {
+      "icon": Icons.warehouse,
+      "title": "Warehouse",
+      "trailing": const SizedBox.shrink(),
+      "enable": true
+    },
+    {
+      "icon": Icons.pie_chart,
+      "title": "Reports",
+      "trailing": null,
+      "enable": true
+    },
+    {
+      "icon": Icons.settings,
+      "title": "Setting",
+      "trailing": null,
+      "enable": true
+    },
+    // {"icon": Icons.pin_end, "title": "Units", "trailing": null, "enable": true},
+    // {
+    //   "icon": Icons.category,
+    //   "title": "Category",
+    //   "trailing": null,
+    //   "enable": true
+    // },
+    // {
+    //   "icon": Icons.branding_watermark,
+    //   "title": "Brands",
+    //   "trailing": null,
+    //   "enable": true
+    // },
   ];
 
   //final pages = <String>['/dashboard', '/products', '/shop', '/points'];

@@ -1,10 +1,7 @@
 import 'package:dio/dio.dart';
 
 abstract class UnitRepository {
-  Future<Response?> login({required String email, required String password});
-  Future<Response?> register(
-      {required String email,
-      required String password,
-      required String role,
-      required bool isActive});
+  Future<Response?> getUnit({required int id});
+  Future<Response?> createUnit(String name, String description);
+  Future<Response?> updateUnit(int id, String name, String description);
 }

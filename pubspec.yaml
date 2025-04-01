@@ -38,11 +38,14 @@ dependencies:
   get: 5.0.0-release-candidate-6
   get_storage: ^2.1.1
   dio: ^5.5.0+1
-  animate_do: ^3.3.4
   data_table_2: ^2.5.15
   dropdown_search: ^5.0.6
   image_picker_web: ^4.0.0
   image_picker: ^1.1.2
+  responsive_grid: ^2.4.4
+  intl: ^0.19.0
+  drop_down_search_field: ^1.0.6
+  fl_chart: ^0.69.2
 
 dev_dependencies:
   flutter_test:

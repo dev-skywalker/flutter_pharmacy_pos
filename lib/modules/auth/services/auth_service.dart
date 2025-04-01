@@ -6,7 +6,7 @@ class AuthService extends BaseApiService {
   Future<Response?> login(
       {required String email, required String password}) async {
     final data = {"email": email, "password": password};
-    final response = await postRequest('/users/login', data);
+    final response = await postRequestWithoutAuth('/users/login', data);
     return response;
   }
 
@@ -21,7 +21,7 @@ class AuthService extends BaseApiService {
       "role": role,
       "isActive": isActive
     };
-    final response = await postRequest('/users/register', data);
+    final response = await postRequestWithoutAuth('/users/register', data);
 
     return response;
   }

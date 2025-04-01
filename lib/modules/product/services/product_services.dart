@@ -26,14 +26,32 @@ class ProductService extends BaseApiService {
     return response;
   }
 
-  Future<Response?> createProduct(FormData formdata) async {
-    final response = await postFormRequest('/products', formdata);
+  Future<Response?> createProductImage(FormData formdata) async {
+    print("WKSSS");
+    final response = await postFormRequest('/image', formdata);
 
     return response;
   }
 
-  Future<Response?> updateProduct(FormData formdata) async {
-    final response = await putFormRequest('/products', formdata);
+  Future<Response?> getProduct(int id) async {
+    final response = await getRequest('/products/$id');
+
+    return response;
+  }
+
+  Future<Response?> deleteProductImage({required String id}) async {
+    final response = await deleteRequestImage('/image', id);
+    return response;
+  }
+
+  Future<Response?> createProduct(Map<String, dynamic> data) async {
+    final response = await postRequest('/products', data);
+    print(response);
+    return response;
+  }
+
+  Future<Response?> updateProduct(Map<String, dynamic> data) async {
+    final response = await putRequest('/products', data);
 
     return response;
   }

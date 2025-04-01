@@ -1,99 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:data_table_2/data_table_2.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:pharmacy_pos/modules/product/model/product_model.dart';
-import 'package:pharmacy_pos/modules/units/model/unit_model.dart';
 import 'package:pharmacy_pos/services/base_api_service.dart';
 
 import '../../../../routes/routes.dart';
-
-class ProductDataSource extends DataTableSource {
-  ProductDataSource.empty(this.context) {
-    products = [];
-  }
-
-  ProductDataSource(this.context,
-      [sortedByCalories = false,
-      this.hasRowTaps = false,
-      this.hasRowHeightOverrides = false,
-      this.hasZebraStripes = false]);
-
-  final BuildContext context;
-  late List<ProductModel> products;
-  // Add row tap handlers and show snackbar
-  bool hasRowTaps = false;
-  // Override height values for certain rows
-  bool hasRowHeightOverrides = false;
-  // Color each Row by index's parity
-  bool hasZebraStripes = false;
-  //List<ProductModel> products = [];
-
-  // void sort<T>(
-  //     Comparable<T> Function(ProductModel d) getField, bool ascending) {
-  //   products.sort((a, b) {
-  //     final aValue = getField(a);
-  //     final bValue = getField(b);
-  //     return ascending
-  //         ? Comparable.compare(aValue, bValue)
-  //         : Comparable.compare(bValue, aValue);
-  //   });
-  //   notifyListeners();
-  // }
-
-  @override
-  DataRow2 getRow(int index, [Color? color]) {
-    // final format = NumberFormat.decimalPercentPattern(
-    //   locale: 'en',
-    //   decimalDigits: 0,
-    // );
-    assert(index >= 0);
-    if (index >= products.length) throw 'index > _products.length';
-    final product = products[index];
-    return DataRow2.byIndex(
-      index: index,
-      selected: false,
-      // specificRowHeight:
-      //     hasRowHeightOverrides && product.fat >= 25 ? 100 : null,
-      cells: [
-        DataCell(SizedBox(
-          width: 15,
-          child: Text(product.id.toString()),
-        )),
-        DataCell(
-          Text(product.name ?? ""),
-        ),
-        DataCell(Text(product.units?.name ?? "")),
-        DataCell(Text(product.units?.name == "card"
-            ? "${product.tabletOnCard}Tablets x ${product.cardOnBox}Tablets"
-            : product.units?.name ?? "")),
-        DataCell(Text(product.description ?? "")),
-        DataCell(Text(product.isLocalProduct.toString())),
-      ],
-    );
-  }
-
-  @override
-  int get rowCount => products.length;
-
-  @override
-  bool get isRowCountApproximate => false;
-
-  @override
-  int get selectedRowCount => 0;
-
-  // void selectAll(bool? checked) {
-  //   // for (final product in products) {
-  //   //   product.selected = checked ?? false;
-  //   // }
-  //   _selectedCount = (checked ?? false) ? products.length : 0;
-  //   notifyListeners();
-  // }
-}
 
 /// Async datasource for AsynPaginatedDataTabke2 example. Based on AsyncDataTableSource which
 /// is an extension to Flutter's DataTableSource and aimed at solving
 /// saync data fetching scenarious by paginated table (such as using Web API)
 class ProductDataSourceAsync extends AsyncDataTableSource {
+  bool _disposed = false;
   ProductDataSourceAsync() {
     print('ProductDataSourceAsync created');
   }
@@ -119,14 +37,20 @@ class ProductDataSourceAsync extends AsyncDataTableSource {
   set filter(String? search) {
     _filter = search;
     refreshDatasource();
-    //notifyListeners();
   }
 
   final ProductWebService _repo = ProductWebService();
 
   // int? get delete => _delete;
-  void deleteProduct(int? id) {
-    _repo.deleteProduct(id!);
+  void deleteProduct(int? id) async {
+    final res = await _repo.deleteProduct(id!);
+    if (res == "success") {
+      Get.snackbar("Success", "Product delete successfully.",
+          snackPosition: SnackPosition.bottom);
+    } else {
+      Get.snackbar("Something Wrong", "Product already used other table.",
+          snackPosition: SnackPosition.bottom);
+    }
     refreshDatasource();
     //notifyListeners();
   }
@@ -147,6 +71,7 @@ class ProductDataSourceAsync extends AsyncDataTableSource {
 
   @override
   Future<AsyncRowsResponse> getRows(int startIndex, int count) async {
+    if (_disposed) return AsyncRowsResponse(totalRecords, []);
     // print('getRows($startIndex, $count)');
     if (_errorCounter != null) {
       _errorCounter = _errorCounter! + 1;
@@ -157,10 +82,6 @@ class ProductDataSourceAsync extends AsyncDataTableSource {
       }
     }
 
-    // final format = NumberFormat.decimalPercentPattern(
-    //   locale: 'en',
-    //   decimalDigits: 0,
-    // );
     assert(startIndex >= 0);
 
     // List returned will be empty is there're fewer items than startingAt
@@ -169,57 +90,94 @@ class ProductDataSourceAsync extends AsyncDataTableSource {
             () => ProductWebServiceResponse(totalRecords: 0, data: []))
         : await _repo.getData(
             startIndex, count, _filter, _sortColumn, _sortAscending);
+    if (_disposed) return AsyncRowsResponse(totalRecords, []);
+
     totalRecords = x.totalRecords;
 
     var r = AsyncRowsResponse(
         x.totalRecords,
         x.data.map((product) {
-          var nameList = product.name?.split(",") ?? ["product name"];
-          return DataRow(
-            key: ValueKey<int>(product.id!),
-            selected: false,
+          var nameList = product.name.split(",");
+          String? expire;
+          if (product.expireDate != null) {
+            DateTime? dt =
+                DateTime.fromMillisecondsSinceEpoch(product.expireDate!);
 
+            var date = DateFormat('dd/MM/yyyy').format(dt);
+            expire = date;
+          }
+
+          return DataRow(
+            key: ValueKey<int>(product.id),
+            selected: false,
             onSelectChanged: null,
-            // onSelectChanged: (value) {
-            //   if (value != null) {
-            //     setRowSelection(ValueKey<int>(product.id), value);
-            //   }
-            // },
             cells: [
-              DataCell(ClipRRect(
-                borderRadius: BorderRadius.circular(50),
-                child: product.imageUrl != ""
-                    ? Image.network(product.imageUrl.toString())
-                    : Image.asset(
-                        "assets/images/m-placeholder.png",
-                        fit: BoxFit.fill,
-                      ),
+              DataCell(SizedBox(
+                width: 50,
+                height: 50,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(50),
+                  child: product.imageUrl != ""
+                      ? Image.network(
+                          product.imageUrl.toString(),
+                          fit: BoxFit.fill,
+                        )
+                      : Image.asset(
+                          "assets/images/m-placeholder.png",
+                          fit: BoxFit.fill,
+                        ),
+                ),
               )),
               DataCell(
                 Text(nameList[0]),
               ),
-              DataCell(Text(product.units?.name ?? "")),
-              DataCell(Text(product.units?.name == "card"
-                  ? "${product.tabletOnCard}Tablets x ${product.cardOnBox}Cards"
-                  : product.units?.name ?? "")),
-              DataCell(IconButton(
-                  onPressed: () {
-                    //deleteProduct(product.id);
-                    Get.toNamed(
-                        "${Routes.app}${Routes.products}${Routes.update}/${product.id}",
-                        arguments: product);
-                  },
-                  icon: const Icon(Icons.edit))),
-              DataCell(IconButton(
-                  onPressed: () {
-                    deleteProduct(product.id);
-                  },
-                  icon: const Icon(Icons.delete))),
+              DataCell(Text(product.unit.name)),
+              DataCell(Text(product.productCost.toString())),
+              DataCell(Text(product.productPrice.toString())),
+              DataCell(Text(expire ?? "")),
+              DataCell(Row(
+                children: [
+                  IconButton(
+                      onPressed: () {
+                        Get.toNamed(
+                            "${Routes.app}${Routes.products}/details/${product.id}");
+                      },
+                      icon: const Icon(
+                        Icons.content_paste,
+                        color: Colors.teal,
+                      )),
+                  IconButton(
+                      onPressed: () {
+                        //deleteProduct(product.id);
+                        Get.toNamed(
+                            "${Routes.app}${Routes.products}${Routes.update}/${product.id}",
+                            arguments: product);
+                      },
+                      icon: const Icon(
+                        Icons.edit_square,
+                        color: Colors.indigo,
+                      )),
+                  IconButton(
+                      onPressed: () {
+                        deleteProduct(product.id);
+                      },
+                      icon: const Icon(
+                        Icons.delete,
+                        color: Colors.red,
+                      )),
+                ],
+              )),
             ],
           );
         }).toList());
 
     return r;
+  }
+
+  @override
+  void dispose() {
+    _disposed = true; // Mark as disposed
+    super.dispose();
   }
 }
 
@@ -249,24 +207,7 @@ class ProductWebService extends BaseApiService {
       List<ProductModel> productList = [];
       final data = response.data['data'] as List<dynamic>;
       for (var v in data) {
-        productList.add(ProductModel(
-          id: v['id'],
-          name: v['name'],
-          barcode: v['barcode'],
-          description: v['description'],
-          imageUrl: v['imageUrl'],
-          tabletOnCard: v['tabletOnCard'],
-          cardOnBox: v['cardOnBox'],
-          isLocalProduct: v['isLocalProduct'],
-          unitId: v['unitId'],
-          createdAt: v['createdAt'],
-          updatedAt: v['updatedAt'],
-          units: Units(
-              id: v['units']['id'],
-              name: v['units']['name'],
-              createdAt: v['units']['createdAt'],
-              updatedAt: v['units']['updatedAt']),
-        ));
+        productList.add(ProductModel.fromJson(v));
       }
       return ProductWebServiceResponse(
           totalRecords: response.data['totalRecords'], data: productList);
@@ -282,9 +223,15 @@ class ProductWebService extends BaseApiService {
     // });
   }
 
-  void deleteProduct(int id) async {
+  Future<String> deleteProduct(int id) async {
+    print(id);
     final response = await deleteRequest('/products', id);
     print(response?.statusCode);
     print(response?.data);
+    if (response != null && response.statusCode == 200) {
+      return response.data['status'];
+    } else {
+      return "";
+    }
   }
 }

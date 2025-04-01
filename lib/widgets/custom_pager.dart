@@ -62,7 +62,9 @@ class CustomPagerState extends State<CustomPager> {
   void initState() {
     super.initState();
     widget.controller.addListener(() {
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
     });
   }
 
@@ -86,50 +88,48 @@ class CustomPagerState extends State<CustomPager> {
 
     // skip this build pass
     if (!widget.controller.isAttached) return const SizedBox();
-    return Container(
-      height: 50,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey,
-            blurRadius: 4,
-            offset: Offset(-2, -2), // Shadow position
-          ),
-        ],
+    return Card(
+      elevation: 10,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(0.0),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
-        children: [
-          Text("${widget.controller.rowCount} ${widget.pagerName}"),
-          const Spacer(),
-          IconButton(
-            onPressed:
-                isFirstPage ? null : () => widget.controller.goToFirstPage(),
-            icon: const Icon(Icons.skip_previous),
-            color: isFirstPage ? Colors.grey : Colors.black,
-          ),
-          IconButton(
-            onPressed:
-                isFirstPage ? null : () => widget.controller.goToPreviousPage(),
-            icon: const Icon(Icons.chevron_left_sharp),
-            color: isFirstPage ? Colors.grey : Colors.black,
-          ),
-          IconButton(
-            onPressed:
-                isLastPage ? null : () => widget.controller.goToNextPage(),
-            icon: const Icon(Icons.chevron_right_sharp),
-            color: isLastPage ? Colors.grey : Colors.black,
-          ),
-          IconButton(
-            onPressed:
-                isLastPage ? null : () => widget.controller.goToLastPage(),
-            icon: const Icon(Icons.skip_next),
-            color: isLastPage ? Colors.grey : Colors.black,
-          ),
-          const Spacer(),
-          Text("Page $currentPage of $totalPages"),
-        ],
+      margin: EdgeInsets.zero,
+      child: Container(
+        height: 50,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          children: [
+            Text("${widget.controller.rowCount} ${widget.pagerName}"),
+            const Spacer(),
+            IconButton(
+              onPressed:
+                  isFirstPage ? null : () => widget.controller.goToFirstPage(),
+              icon: const Icon(Icons.skip_previous),
+              color: isFirstPage ? Colors.grey : Colors.black,
+            ),
+            IconButton(
+              onPressed: isFirstPage
+                  ? null
+                  : () => widget.controller.goToPreviousPage(),
+              icon: const Icon(Icons.chevron_left_sharp),
+              color: isFirstPage ? Colors.grey : Colors.black,
+            ),
+            IconButton(
+              onPressed:
+                  isLastPage ? null : () => widget.controller.goToNextPage(),
+              icon: const Icon(Icons.chevron_right_sharp),
+              color: isLastPage ? Colors.grey : Colors.black,
+            ),
+            IconButton(
+              onPressed:
+                  isLastPage ? null : () => widget.controller.goToLastPage(),
+              icon: const Icon(Icons.skip_next),
+              color: isLastPage ? Colors.grey : Colors.black,
+            ),
+            const Spacer(),
+            Text("Page $currentPage of $totalPages"),
+          ],
+        ),
       ),
     );
   }

@@ -7,15 +7,17 @@ class UnitRepositoryImpl extends UnitRepository {
   final UnitService _unitService = UnitService();
 
   @override
-  Future<Response?> login({required String email, required String password}) =>
-      _unitService.login(email: email, password: password);
+  Future<Response?> createUnit(String name, String description) {
+    return _unitService.createUnit(name, description);
+  }
 
   @override
-  Future<Response?> register(
-          {required String email,
-          required String password,
-          required String role,
-          required bool isActive}) =>
-      _unitService.register(
-          email: email, password: password, role: role, isActive: isActive);
+  Future<Response?> updateUnit(int id, String name, String description) {
+    return _unitService.updateUnit(id, name, description);
+  }
+
+  @override
+  Future<Response?> getUnit({required int id}) {
+    return _unitService.getUnit(id);
+  }
 }

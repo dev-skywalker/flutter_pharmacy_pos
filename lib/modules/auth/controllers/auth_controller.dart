@@ -1,8 +1,8 @@
 // auth_controller.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:pharmacy_pos/routes/routes.dart';
-import 'package:pharmacy_pos/services/storage_services.dart';
 import '../repository/auth_repository.dart';
 
 class AuthController extends GetxController {
@@ -12,17 +12,13 @@ class AuthController extends GetxController {
   RxBool isLoginPage = true.obs;
   RxBool loggedIn = false.obs;
   RxBool isLoading = false.obs;
-  TextEditingController emailController =
-      TextEditingController(text: "User0@gmail.com");
-  TextEditingController passwordController =
-      TextEditingController(text: "Aaaaaaa@1");
+  TextEditingController emailController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
   TextEditingController confirmPasswordController = TextEditingController();
 
   RxBool isLoginPasswordVisible = false.obs;
   RxBool isPasswordVisible = false.obs;
   RxBool isConfirmPasswordVisible = false.obs;
-
-  final StorageService box = StorageService();
 
   final loginFormKey = GlobalKey<FormState>();
   final registerFormKey = GlobalKey<FormState>();
@@ -75,21 +71,28 @@ class AuthController extends GetxController {
 
   void loginWithEmail() async {
     isLoading(true);
+    final GetStorage box = GetStorage();
+
     final response = await authRepository.login(
         email: emailController.text, password: passwordController.text);
     if (response != null && response.statusCode == 200) {
       isLoading(false);
+      //print(response.data);
       final token = response.data['token'].toString();
-      box.save(key: 'token', data: token);
+      final user = response.data['payload'];
+
+      //print(user);
+      box.write('user', user);
+      box.write("token", token);
+
       cleanController();
-      Get.offAllNamed(Routes.app);
-      Get.snackbar(
-          "Success", "Code - ${response.statusCode}, ${response.statusMessage}",
+
+      Get.snackbar("Success", "Login Successfully",
           snackPosition: SnackPosition.bottom);
+      Get.offAndToNamed("${Routes.app}${Routes.dashboard}");
     } else {
       isLoading(false);
-      Get.snackbar("Something Wrong!",
-          "Code - ${response?.statusCode}, ${response?.statusMessage}",
+      Get.snackbar("Something Wrong!", "Invalid Credentials",
           snackPosition: SnackPosition.bottom);
     }
   }
